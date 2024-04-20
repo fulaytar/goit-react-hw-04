@@ -1,6 +1,7 @@
 .container {
   padding: 20px;
   background-color: #3747ac;
+  margin-bottom: 20px;
 }
 .input {
   position: relative;
@@ -30,8 +31,7 @@
   cursor: pointer;
   transition: all 200ms ease-in;
 }
-/* .btn:hover {
+.btn:hover {
   transform: scale(1.2);
   color: #3747ac;
 }
- */

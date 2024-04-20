@@ -1,0 +1,23 @@
+.btn {
+  display: block;
+  padding: 10px 15px;
+  margin: 0 auto;
+  background-color: #0056b3; /* Синій колір кнопки */
+  color: #fff; /* Білий колір тексту */
+  border: none; /* Видалення меж */
+  border-radius: 8px; /* Округлені кути */
+  transition: background-color 0.3s ease; /* Плавна анімація зміни кольору фону */
+  cursor: pointer; /* Змінюється курсор при наведенні */
+  margin-bottom: 20px;
+}
+
+/* Ефект ховера */
+.btn:hover {
+  background-color: #007bff; /* Темніший відтінок синього при наведенні */
+}
+
+/* Ефект фокусу */
+.btn:focus {
+  outline: none; /* Видалення контурного обведення */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5); /* Додаємо контурне обведення з використанням тіні */
+}
