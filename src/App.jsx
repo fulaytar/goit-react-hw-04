@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
 import ErrorMessage from "./components/ErrorMessage/ErrorMessage";
 import SearchBar from "./components/SearchBar/SearchBar";
 import ImageGallery from "./components/ImageGallery/ImageGallery";
 import Loader from "./components/Loader/Loader";
 import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
+
 import axios from "axios";
+import Modal from "react-modal";
+
+Modal.setAppElement("#root");
 
 export default function App() {
   const [error, setError] = useState(false);
@@ -22,6 +27,9 @@ export default function App() {
 
   async function sendRequest(event) {
     event.preventDefault();
+    setCurrentPage(1);
+    setCurrentPerPage(10);
+    setSaveData([]);
     setSaveQuery(currentQuery);
     if (currentQuery === "") {
       setError(true);
@@ -48,7 +56,7 @@ export default function App() {
         setSaveData([]);
         return;
       }
-
+      console.log(response.data.results, "початкові дані");
       setSaveData(response.data.results);
     } catch (error) {
       setError(true);
@@ -58,14 +66,14 @@ export default function App() {
     } finally {
       setStatusLoader(false);
       setCurrentQuery("");
+      setCurrentPage(currentPage + 1);
     }
   }
 
   async function LoadMore() {
+    setCurrentPage(currentPage + 1);
     console.log("load");
     setStatusLoader(true);
-    setCurrentPage(currentPage + 1);
-    setCurrentPerPage(currentPerPage + 10);
 
     try {
       const response = await axios.get("search/photos/", {
@@ -79,15 +87,14 @@ export default function App() {
 
       const totalResults = response.data.total;
       const lastPage = Math.ceil(totalResults / currentPerPage);
+      console.log(currentPage, currentPerPage);
       console.log(totalResults, lastPage);
       if (currentPage === lastPage) {
         setError(true);
         setErrorMessage("No more results found");
         return;
       }
-      const newArray = saveData.concat(response.data.results);
-      setSaveData(newArray);
-      console.log(newArray);
+      setSaveData(saveData.concat([...response.data.results]));
     } catch (error) {
       setError(true);
       setErrorMessage("Request failed");
@@ -114,7 +121,9 @@ export default function App() {
         countBadClick={countBadClick}
         errorMessage={errorMessage}
       />
-      {saveData.length > 0 ? <LoadMoreBtn loadMore={LoadMore} /> : null}
+      {saveData.length > 0 ? (
+        <LoadMoreBtn loadMore={LoadMore} status={error} />
+      ) : null}
     </>
   );
 }
