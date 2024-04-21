@@ -1,138 +1,84 @@
-import { useState } from "react";
-
-import ErrorMessage from "./components/ErrorMessage/ErrorMessage";
-import SearchBar from "./components/SearchBar/SearchBar";
+import { useEffect, useState } from "react";
+import { fetchImages } from "./image-api";
 import ImageGallery from "./components/ImageGallery/ImageGallery";
 import Loader from "./components/Loader/Loader";
+import ErrorMessage from "./components/ErrorMessage/ErrorMessage";
+import SearchBar from "./components/SearchBar/SearchBar";
 import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
 import ImageModal from "./components/ImageModal/ImageModal";
 
-import axios from "axios";
-
 export default function App() {
-  const [showModal, setShowModal] = useState(false);
-  const [modalImage, setModalImage]=useState('')
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [error, setError] = useState(false);
-  const [currentQuery, setCurrentQuery] = useState("");
-  const [countBadClick, setCountBadClick] = useState(0);
-  const [saveData, setSaveData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusLoader, setStatusLoader] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPerPage, setCurrentPerPage] = useState(10);
-  const [saveQuery, setSaveQuery] = useState("");
 
-  const ACCESS_KEY = "_5GkMmgOY3uWBKwoENAS_StEo0bzggOwTmwgOmyP1Ww";
-  axios.defaults.baseURL = "https://api.unsplash.com/";
+  const [showModal, setShowModal] = useState(false);
+  const [modalImage, setModalImage] = useState("");
 
+  const handleSubmit = async (newQuery) => {
+    setQuery(newQuery);
+    setPage(1);
+    setImages([]);
+  };
 
+  function loadMore() {
+    setPage(page + 1);
+  }
 
-  async function sendRequest(event) {
-    event.preventDefault();
-    setCurrentPage(1);
-    setCurrentPerPage(10);
-    setSaveData([]);
-    setSaveQuery(currentQuery);
-    if (currentQuery === "") {
-      setError(true);
-      setErrorMessage("Please enter text");
-      setCountBadClick(countBadClick + 1);
+  useEffect(() => {
+    setErrorMessage("");
+
+    if (query === "") {
       return;
     }
-    setError(false);
-    setStatusLoader(true);
+    async function getImages() {
+      try {
+        setIsLoading(true);
+        const data = await fetchImages(query, page);
+        if (data.total === 0) {
+          setErrorMessage("No results found");
+          return;
+        }
+        const totalResults = data.total;
+        const lastPage = Math.ceil(totalResults / page);
+        console.log(totalResults, lastPage);
+        if (page === lastPage) {
+          setErrorMessage("It`s last page");
+          return;
+        }
 
-    try {
-      const response = await axios.get("search/photos/", {
-        params: {
-          query: currentQuery,
-          client_id: ACCESS_KEY,
-          page: 1,
-          per_page: 10,
-        },
-      });
-      if (response.data.results.length === 0) {
-        setError(true);
-        setErrorMessage("No results found");
-        setCurrentQuery("");
-        setSaveData([]);
-        return;
+        setImages((prevImages) => {
+          return [...prevImages, ...data.results];
+        });
+      } catch (error) {
+        setErrorMessage("Request failed");
+      } finally {
+        setIsLoading(false);
       }
-      console.log(response.data.results, "початкові дані");
-      setSaveData(response.data.results);
-    } catch (error) {
-      setError(true);
-      setErrorMessage("Request failed");
-      setCurrentQuery("");
-      setSaveData([]);
-    } finally {
-      setStatusLoader(false);
-      setCurrentQuery("");
-      setCurrentPage(currentPage + 1);
     }
-  }
 
-  async function LoadMore() {
-    setCurrentPage(currentPage + 1);
-    console.log("load");
-    setStatusLoader(true);
-
-    try {
-      const response = await axios.get("search/photos/", {
-        params: {
-          query: saveQuery,
-          client_id: ACCESS_KEY,
-          page: currentPage,
-          per_page: currentPerPage,
-        },
-      });
-
-      const totalResults = response.data.total;
-      const lastPage = Math.ceil(totalResults / currentPerPage);
-      console.log(currentPage, currentPerPage);
-      console.log(totalResults, lastPage);
-      if (currentPage === lastPage) {
-        setError(true);
-        setErrorMessage("No more results found");
-        return;
-      }
-      setSaveData(saveData.concat([...response.data.results]));
-    } catch (error) {
-      setError(true);
-      setErrorMessage("Request failed");
-    } finally {
-      setStatusLoader(false);
-    }
-  }
-
-  function handleChange(event) {
-    const value = event.target.value;
-    setCurrentQuery(value);
-  }
+    getImages();
+  }, [page, query]);
 
   function openModal(scr) {
     setShowModal(!showModal);
-    setModalImage(scr)
-    
+    setModalImage(scr);
   }
+
   return (
     <>
-      <SearchBar
-        sendRequest={sendRequest}
-        query={currentQuery}
-        setQuery={handleChange}
-      />
-      {saveData.length > 0 ? <ImageGallery saveData={saveData} openModal={ openModal} /> : null}
-      <Loader statusLoader={statusLoader} />
-      <ErrorMessage
-        status={error}
-        countBadClick={countBadClick}
-        errorMessage={errorMessage}
-      />
-      {saveData.length > 0 ? (
-        <LoadMoreBtn loadMore={LoadMore} status={error} />
+      <SearchBar handleSubmit={handleSubmit} />
+      {errorMessage && <ErrorMessage errorMessage={errorMessage} />}
+      {images.length > 0 ? (
+        <ImageGallery images={images} openModal={openModal} />
       ) : null}
+      {isLoading && <Loader />}
+      {images.length > 0 && !isLoading && !errorMessage && (
+        <LoadMoreBtn loadMore={loadMore} />
+      )}
       {showModal && <ImageModal modalImage={modalImage} />}
     </>
   );

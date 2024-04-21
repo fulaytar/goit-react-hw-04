@@ -1,15 +1,15 @@
 import css from "./ImageCard.module.css";
 
-export default function ImageCard({ scr, alt, openModal }) {
+export default function ImageCard({ src, alt, openModal }) {
   return (
     <li>
       <img
         className={css.img}
-        src={scr}
+        src={src}
         alt={alt}
         width={"300px"}
         onClick={() => {
-          openModal(scr);
+          openModal(src);
         }}
       />
     </li>

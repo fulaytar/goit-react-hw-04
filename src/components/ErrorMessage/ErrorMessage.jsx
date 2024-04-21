@@ -1,12 +1,17 @@
-import { useEffect } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import { useEffect, useRef } from "react";
 
-export default function ErrorMessage({ status, countBadClick, errorMessage }) {
+export default function ErrorMessage({ errorMessage }) {
+  const toastId = useRef(null);
+
   useEffect(() => {
-    if (status) {
-      toast.error(errorMessage);
+    if (errorMessage) {
+      if (toastId.current) {
+        toast.dismiss(toastId.current);
+      }
+      toastId.current = toast.error(`${errorMessage}`);
     }
-  }, [status, countBadClick, errorMessage]);
+  }, [errorMessage]);
 
   return (
     <>

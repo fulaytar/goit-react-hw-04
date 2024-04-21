@@ -5,7 +5,7 @@ Modal.setAppElement("#root");
 export default function ImageModal({ modalImage }) {
   return (
     <>
-      <img src={modalImage} alt="" width={"300px"} />
+      <img className={css.img} src={modalImage} alt="" width={"300px"} />
     </>
   );
 }
