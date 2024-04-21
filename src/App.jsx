@@ -5,13 +5,14 @@ import SearchBar from "./components/SearchBar/SearchBar";
 import ImageGallery from "./components/ImageGallery/ImageGallery";
 import Loader from "./components/Loader/Loader";
 import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
+import ImageModal from "./components/ImageModal/ImageModal";
 
 import axios from "axios";
-import Modal from "react-modal";
-
-Modal.setAppElement("#root");
 
 export default function App() {
+  const [showModal, setShowModal] = useState(false);
+  const [modalImage, setModalImage]=useState('')
+
   const [error, setError] = useState(false);
   const [currentQuery, setCurrentQuery] = useState("");
   const [countBadClick, setCountBadClick] = useState(0);
@@ -24,6 +25,8 @@ export default function App() {
 
   const ACCESS_KEY = "_5GkMmgOY3uWBKwoENAS_StEo0bzggOwTmwgOmyP1Ww";
   axios.defaults.baseURL = "https://api.unsplash.com/";
+
+
 
   async function sendRequest(event) {
     event.preventDefault();
@@ -107,6 +110,12 @@ export default function App() {
     const value = event.target.value;
     setCurrentQuery(value);
   }
+
+  function openModal(scr) {
+    setShowModal(!showModal);
+    setModalImage(scr)
+    
+  }
   return (
     <>
       <SearchBar
@@ -114,7 +123,7 @@ export default function App() {
         query={currentQuery}
         setQuery={handleChange}
       />
-      {saveData.length > 0 ? <ImageGallery saveData={saveData} /> : null}
+      {saveData.length > 0 ? <ImageGallery saveData={saveData} openModal={ openModal} /> : null}
       <Loader statusLoader={statusLoader} />
       <ErrorMessage
         status={error}
@@ -124,6 +133,7 @@ export default function App() {
       {saveData.length > 0 ? (
         <LoadMoreBtn loadMore={LoadMore} status={error} />
       ) : null}
+      {showModal && <ImageModal modalImage={modalImage} />}
     </>
   );
 }
