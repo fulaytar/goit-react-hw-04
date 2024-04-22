@@ -1,4 +1,5 @@
 import Modal from "react-modal";
+import { AiOutlineCloseCircle } from "react-icons/ai";
 
 import css from "./ImageModal.module.css";
 export default function ImageModal({ isOpen, imageUrl, onRequestClose }) {
@@ -35,6 +36,13 @@ export default function ImageModal({ isOpen, imageUrl, onRequestClose }) {
         style={customStyles}
       >
         <img src={imageUrl} alt="Large Image" />
+        <button
+          type="button"
+          className={css.close}
+          onClick={() => onRequestClose(false)}
+        >
+          <AiOutlineCloseCircle />
+        </button>
       </Modal>
     </>
   );
