@@ -7,6 +7,7 @@ import SearchBar from "./components/SearchBar/SearchBar";
 import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
 import ImageModal from "./components/ImageModal/ImageModal";
 import { Toaster } from "react-hot-toast";
+import Modal from "react-modal";
 
 export default function App() {
   const [images, setImages] = useState([]);
@@ -15,9 +16,10 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [error, setError] = useState(false);
-
-  const [showModal, setShowModal] = useState(false);
-  const [modalImage, setModalImage] = useState("");
+  Modal.setAppElement("#root");
+  // modal states
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState("");
 
   const [endOfCollection, setEndOfCollection] = useState(false);
 
@@ -68,10 +70,14 @@ export default function App() {
     getImages();
   }, [page, query]);
 
-  function openModal(scr) {
-    setShowModal(!showModal);
-    setModalImage(scr);
-  }
+  const openModal = (imageUrl) => {
+    setModalImageUrl(imageUrl);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
 
   return (
     <>
@@ -89,7 +95,11 @@ export default function App() {
           message={"Failed to load images. Please try again later."}
         />
       )}
-      {showModal && <ImageModal modalImage={modalImage} />}
+      <ImageModal
+        isOpen={modalIsOpen}
+        imageUrl={modalImageUrl}
+        onRequestClose={closeModal}
+      />
       {endOfCollection && <p>No more images available.</p>}
       <Toaster position="top-right" />
     </>

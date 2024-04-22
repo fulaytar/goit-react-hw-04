@@ -4,12 +4,13 @@ import ImageCard from "../ImageCard/ImageCard";
 export default function ImageGallery({ images, openModal }) {
   return (
     <ul className={css.list}>
-      {images.map((element) => (
+      {images.map((image) => (
         <ImageCard
-          key={element.id}
-          src={element.urls.small}
-          alt={element.alt_description}
+          key={image.id}
+          src={image.urls.small}
+          alt={image.alt_description}
           openModal={openModal}
+          image={image}
         />
       ))}
     </ul>
