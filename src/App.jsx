@@ -6,6 +6,7 @@ import ErrorMessage from "./components/ErrorMessage/ErrorMessage";
 import SearchBar from "./components/SearchBar/SearchBar";
 import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
 import ImageModal from "./components/ImageModal/ImageModal";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   const [images, setImages] = useState([]);
@@ -13,15 +14,18 @@ export default function App() {
 
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [error, setError] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const [modalImage, setModalImage] = useState("");
+
+  const [endOfCollection, setEndOfCollection] = useState(false);
 
   const handleSubmit = async (newQuery) => {
     setQuery(newQuery);
     setPage(1);
     setImages([]);
+    setEndOfCollection(false);
   };
 
   function loadMore() {
@@ -29,7 +33,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    setErrorMessage("");
+    setError(false);
 
     if (query === "") {
       return;
@@ -39,14 +43,15 @@ export default function App() {
         setIsLoading(true);
         const data = await fetchImages(query, page);
         if (data.total === 0) {
-          setErrorMessage("No results found");
+          setError(true);
           return;
         }
         const totalResults = data.total;
         const lastPage = Math.ceil(totalResults / page);
         console.log(totalResults, lastPage);
         if (page === lastPage) {
-          setErrorMessage("It`s last page");
+          setEndOfCollection(true);
+
           return;
         }
 
@@ -54,7 +59,7 @@ export default function App() {
           return [...prevImages, ...data.results];
         });
       } catch (error) {
-        setErrorMessage("Request failed");
+        setError(true);
       } finally {
         setIsLoading(false);
       }
@@ -71,15 +76,22 @@ export default function App() {
   return (
     <>
       <SearchBar handleSubmit={handleSubmit} />
-      {errorMessage && <ErrorMessage errorMessage={errorMessage} />}
+
       {images.length > 0 ? (
         <ImageGallery images={images} openModal={openModal} />
       ) : null}
       {isLoading && <Loader />}
-      {images.length > 0 && !isLoading && !errorMessage && (
+      {images.length > 0 && !isLoading && !endOfCollection && (
         <LoadMoreBtn loadMore={loadMore} />
       )}
+      {error && (
+        <ErrorMessage
+          message={"Failed to load images. Please try again later."}
+        />
+      )}
       {showModal && <ImageModal modalImage={modalImage} />}
+      {endOfCollection && <p>No more images available.</p>}
+      <Toaster position="top-right" />
     </>
   );
 }

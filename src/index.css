@@ -13,3 +13,9 @@ ul {
   margin-right: auto;
   display: block;
 }
+p,
+b {
+  text-align: center;
+  color: red;
+  display: block;
+}
